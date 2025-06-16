@@ -8,32 +8,12 @@ use glfw::ffi::glfwGetTime;
 extern crate gl;
 use gl::types::*;
 
+mod shaderprogram;
 
 
 // global values
 const WIN_WIDTH: u32 = 640;
 const WIN_HEIGHT: u32 = 480;
-
-const VERTEX_SHADER_SOURCE: &str = "#version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColor;
-
-out vec3 ourColor;
-
-void main()
-{
-    gl_Position = vec4(aPos, 1.0);
-    ourColor = aColor;
-}";
-
-const FRAGMENT_SHADER_SOURCE: &str = "#version 330 core
-out vec4 FragColor;
-in vec3 ourColor;
-
-void main()
-{
-    FragColor = vec4(ourColor, 1.0);
-}";
 
 // Main loop
 fn main() {
@@ -61,41 +41,6 @@ fn main() {
     unsafe {
         gl::Viewport(0, 0,WIN_WIDTH as i32, WIN_HEIGHT as i32);
     }
-
-    // build and compile shader program
-    // vertex shader
-    let vertex_shader = unsafe {
-        let shader: u32 = gl::CreateShader(gl::VERTEX_SHADER);
-        let c_str_vert = std::ffi::CString::new(VERTEX_SHADER_SOURCE).unwrap();
-        gl::ShaderSource(shader, 1, &c_str_vert.as_ptr(), std::ptr::null());
-        gl::CompileShader(shader);
-        shader
-    };
-    
-    // fragment shader
-    let fragment_shader = unsafe {
-        let shader: u32 = gl::CreateShader(gl::FRAGMENT_SHADER);
-        let c_str_vert = std::ffi::CString::new(FRAGMENT_SHADER_SOURCE).unwrap();
-        gl::ShaderSource(shader, 1, &c_str_vert.as_ptr(), std::ptr::null());
-        gl::CompileShader(shader);
-        shader
-    };
-    
-    let shader_Program = unsafe {
-        let program = gl::CreateProgram();
-        gl::AttachShader(program, vertex_shader);
-        gl::AttachShader(program, fragment_shader);
-        gl::LinkProgram(program);
-        // check for linking erros
-        let mut success = 0;
-        gl::GetProgramiv(program, gl::LINK_STATUS, &mut success);
-        if success == 0 {
-            println!("ERROR::SHADER::PROGRAM::LINKING_FAILED")
-        }
-        gl::DeleteShader(vertex_shader);
-        gl::DeleteShader(fragment_shader);
-        program
-    };
     
     // vertex data
     let vertices: [f32; 18] = [ 
@@ -126,10 +71,10 @@ fn main() {
         gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, 6 * std::mem::size_of::<f32>() as i32, (3 * std::mem::size_of::<f32>() as i32) as *const std::ffi::c_void);
         gl::EnableVertexAttribArray(1);
         // 2. use shader program when we want to render an object
-        gl::UseProgram(shader_Program);
     }
-
     
+    
+    let Shader = shaderprogram::Shader::shaderProgram("./src/shaders/default.vert", "./src/shaders/default.frag");
     // Loop until the user closes the window
     while !window.should_close() {
         // input
@@ -151,8 +96,7 @@ fn main() {
             // Clear the window
             gl::Clear(gl::COLOR_BUFFER_BIT);
             // link shaders
-            gl::UseProgram(shader_Program);
-
+            gl::UseProgram(Shader);
             // bind vertex array object
             gl::BindVertexArray(vao);
             // Draw triangle
@@ -171,9 +115,9 @@ fn main() {
     unsafe {
         gl::DeleteVertexArrays(1, &vao);
         gl::DeleteBuffers(1, &vbo);
-        gl::DeleteProgram(shader_Program);
-        gl::DeleteShader(vertex_shader);
-        gl::DeleteShader(fragment_shader);
+        // gl::DeleteProgram(shader_Program);
+        // gl::DeleteShader(vertex_shader);
+        // gl::DeleteShader(fragment_shader);
     }
     
 }
