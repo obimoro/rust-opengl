@@ -1,4 +1,4 @@
-use image::GenericImageView;
+use image::{GenericImageView, DynamicImage};
 use gl;
 
 pub struct Texture {
@@ -10,6 +10,11 @@ impl Texture {
     pub fn new(texture_path: &str) -> Result<Self, String> {
 
         let img = image::open(texture_path).map_err(|e| e.to_string())?;
+        let format = match img {
+            DynamicImage::ImageRgb8(_) => gl::RGB,
+            DynamicImage::ImageRgba8(_) => gl::RGBA,
+            _ => return Err("Unsupported image format".to_string()),
+        };
         let mut texture = 0;
         unsafe { 
             gl::GenTextures(1, &mut texture);
@@ -17,11 +22,11 @@ impl Texture {
             gl::TexImage2D(
                 gl::TEXTURE_2D,
                 0,
-                gl::RGB as i32, 
+                format as i32, 
                 img.width() as i32, 
                 img.height() as i32, 
                 0, 
-                gl::RGB, 
+                format as u32, 
                 gl::UNSIGNED_BYTE, 
                 img.into_bytes().as_ptr() as *const _ 
             );

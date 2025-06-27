@@ -21,6 +21,8 @@ impl Shader {
             gl::CompileShader(vertex);
             vertex
         };
+
+        Self::check_compile_erros(vertex,"VERTEX");
         
         // fragment shader
         let f_shader_code: *const i8 = f_shader_file.as_bytes().as_ptr() as *const i8;
@@ -30,6 +32,7 @@ impl Shader {
             gl::CompileShader(fragment);
             fragment
         };
+        Self::check_compile_erros(fragment,"FRAGMENT");
         
         let program = unsafe { gl::CreateProgram() };
         unsafe {
@@ -37,18 +40,43 @@ impl Shader {
             gl::AttachShader(program, fragment);
             gl::LinkProgram(program);
         };
-            // check for linking erros
-            let mut success = 0;
-            unsafe { gl::GetProgramiv(program, gl::LINK_STATUS, &mut success) };
-            if success == 0 {
-                println!("ERROR::SHADER::PROGRAM::LINKING_FAILED")
-            }
+
+        // check for linking erros
+        Self::check_compile_erros(program,"PROGRAM");
+
             unsafe {
                 gl::DeleteShader(vertex);
                 gl::DeleteShader(fragment);
             };
         //return program;
         Shader { id: program }
+
+        
+    }
+
+    fn check_compile_erros(shader:u32, type_: &str) {
+        let mut success = 0;
+        let mut info_log  = [0; 1024];
+
+        if type_ != "PROGRAM" {
+            unsafe {
+                gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut success);
+                if success == 0 {
+                    gl::GetShaderInfoLog(shader, 1024, std::ptr::null_mut(), info_log.as_mut_ptr());
+                    let info_log_str = std::ffi::CStr::from_ptr(info_log.as_ptr()).to_str().unwrap_or("Failed to decode info log");
+                    println!("ERROR::SHADER_COMPILATION_ERROR of type: {}\n{}\n -- --------------------------------------------------- -- ", type_, info_log_str);
+                }
+            }
+        } else {
+            unsafe {
+                gl::GetProgramiv(shader, gl::LINK_STATUS, &mut success);
+                if success == 0 {
+                    gl::GetProgramInfoLog(shader, 1024, std::ptr::null_mut(), info_log.as_mut_ptr());
+                     let info_log_str = std::ffi::CStr::from_ptr(info_log.as_ptr()).to_str().unwrap_or("Failed to decode info log");
+                    println!("ERROR::PROGRAM_LINKING_ERROR of type: {}\n{}\n -- --------------------------------------------------- -- ", type_, info_log_str);
+                }
+            }
+        }
     }
 
     pub fn use_shader(&self) {
@@ -67,7 +95,7 @@ impl Shader {
         unsafe { gl::Uniform1i(location, value) };
     }
 
-    fn get_uniform_location(&self, name: &str) -> i32 {
+    pub fn get_uniform_location(&self, name: &str) -> i32 {
         let c_str = std::ffi::CString::new(name).unwrap();
         let location = unsafe { gl::GetUniformLocation(self.id, c_str.as_ptr()) };
         location

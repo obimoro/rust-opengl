@@ -74,10 +74,10 @@ fn main() {
         // 1. bind vertex array object
         gl::BindVertexArray(vao);
         gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
         // 2. set the vertex attributes pointers
         gl::BufferData(gl::ARRAY_BUFFER, (vertices.len() * std::mem::size_of::<f32>()) as isize,
-                                                        vertices.as_ptr() as *const std::ffi::c_void, gl::STATIC_DRAW);
+        vertices.as_ptr() as *const std::ffi::c_void, gl::STATIC_DRAW);
+        gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
         gl::BufferData(gl::ELEMENT_ARRAY_BUFFER, (indices.len() * std::mem::size_of::<i32>()) as isize,
                                                         indices.as_ptr() as *const std::ffi::c_void, gl::STATIC_DRAW);
         // 3. set our vertex attributes pointers
@@ -100,6 +100,10 @@ fn main() {
     // init texture
      let texture1 = texture::Texture::new("./resources/texture/container.jpg").unwrap();
      let texture2 = texture::Texture::new("./resources/texture/awesomeface.png").unwrap();
+    
+
+    shader.set_int("texture1", 0);
+    shader.set_int("texture2", 1);
 
     
     // Loop until the user closes the window
@@ -125,13 +129,11 @@ fn main() {
             // link shaders
             
             // bind texture 
-            gl::ActiveTexture(gl::TEXTURE0);
-            gl::BindTexture(gl::TEXTURE_2D, texture1.get_id());
+            // gl::ActiveTexture(gl::TEXTURE0);
+            // gl::BindTexture(gl::TEXTURE_2D, texture1.get_id());
             gl::ActiveTexture(gl::TEXTURE1);
             gl::BindTexture(gl::TEXTURE_2D, texture2.get_id());
             shader.use_shader();
-            shader.set_int("texture1", 0);
-            shader.set_int("texture2", 1);
             // bind vertex array object
             gl::BindVertexArray(vao);
             // Draw triangle
@@ -151,6 +153,7 @@ fn main() {
     unsafe {
         gl::DeleteVertexArrays(1, &vao);
         gl::DeleteBuffers(1, &vbo);
+        gl::DeleteBuffers(1, &ebo);
     }
     
 }
