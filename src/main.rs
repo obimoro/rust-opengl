@@ -7,7 +7,7 @@ use glfw::{Action, Context, Key};
 use glfw::ffi::glfwGetTime;
 extern crate gl;
 use gl::types::*;
-
+use glam;
 
 mod shaderprogram;
 mod texture;
@@ -47,10 +47,10 @@ fn main() {
     // vertex data
     let vertices: [f32; 32] = [ 
         // position     // colors      // texture cords
-         0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, // top right
-         0.5,-0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, // bottom right
+         0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 2.0, 2.0, // top right
+         0.5,-0.5, 0.0, 0.0, 1.0, 0.0, 2.0, 0.0, // bottom right
         -0.5,-0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, // bottom left
-        -0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0];// top left
+        -0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 2.0];// top left
 
     // indices data
     let indices: [i32; 6] = [
@@ -99,9 +99,9 @@ fn main() {
     
     // init texture
      let texture1 = texture::Texture::new("./resources/texture/container.jpg").unwrap();
-     let texture2 = texture::Texture::new("./resources/texture/awesomeface.png").unwrap();
+     let texture2 = texture::Texture::new("./resources/texture/rust_icon.png").unwrap();
     
-
+    shader.use_shader();    
     shader.set_int("texture1", 0);
     shader.set_int("texture2", 1);
 
@@ -129,10 +129,16 @@ fn main() {
             // link shaders
             
             // bind texture 
-            // gl::ActiveTexture(gl::TEXTURE0);
-            // gl::BindTexture(gl::TEXTURE_2D, texture1.get_id());
+            gl::ActiveTexture(gl::TEXTURE0);
+            gl::BindTexture(gl::TEXTURE_2D, texture1.get_id());
             gl::ActiveTexture(gl::TEXTURE1);
             gl::BindTexture(gl::TEXTURE_2D, texture2.get_id());
+
+            // create transformations
+            let mut transform = glam::Mat4::IDENTITY;
+            let translation = glam::Vec3::new(0.5, -0.5, 0.0);
+            
+
             shader.use_shader();
             // bind vertex array object
             gl::BindVertexArray(vao);
