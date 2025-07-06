@@ -107,14 +107,23 @@ fn main() {
      
      // Loop until the user closes the window
      while !window.should_close() {
-         let time = unsafe { glfw::ffi::glfwGetTime() as f32 };
-         println!("{}", time);
-         let mut vec = glam::Vec4::new(1.0, 0.0, 0.0, 1.0);
-         let mut trans = glam::Mat4::IDENTITY;
-         //trans = trans * glam::Mat4::from_translation(glam::Vec3::new(1.0, 1.0, 0.0));
-         trans = trans * glam::Mat4::from_rotation_translation(glam::Quat::from_axis_angle(glam::Vec3::Z, time), glam::Vec3::new(0.0, 0.0, 1.0));
-         trans = trans * glam::Mat4::from_scale(glam::Vec3::new(0.5, 0.5, 0.5));
-         vec = trans * vec;   
+        let time = unsafe { glfw::ffi::glfwGetTime() as f32 };
+         
+        let mut model = glam::Mat4::IDENTITY;
+        //model = model * glam::Mat4::from_rotation_translation(glam::Quat::from_axis_angle(glam::Vec3::X, -55.0), glam::Vec3::new(1.0, 0.0,0.0));
+        model = model * glam::Mat4::from_rotation_x(-55.0_f32.to_radians());
+        let mut view = glam::Mat4::IDENTITY;
+        view = view * glam::Mat4::from_translation(glam::Vec3::new(0.0, 0.0, -3.0));
+        
+        let mut projection = glam::Mat4::IDENTITY;
+        // rh stands for right hand
+        projection = projection * glam::Mat4::perspective_rh(45.0_f32.to_radians(), (WIN_WIDTH / WIN_HEIGHT) as f32, 0.1, 100.0);
+        //  let mut vec = glam::Vec4::new(1.0, 0.0, 0.0, 1.0);
+        //  let mut trans = glam::Mat4::IDENTITY;
+        //  trans = trans * glam::Mat4::from_transla<tion(glam::Vec3::new(0.5, -0.5, 0.0));
+        //  trans = trans * glam::Mat4::from_rotation_translation(glam::Quat::from_axis_angle(glam::Vec3::Z, time), glam::Vec3::new(0.0, 0.0, 1.0));
+        //  trans = trans * glam::Mat4::from_scale(glam::Vec3::new(0.5, 0.5, 0.5));
+        //  vec = trans * vec;   
          //println!("x: {}, y: {} z: {}, w: {}", vec.x, vec.y, vec.z, vec.w);
          
         // input
@@ -129,7 +138,8 @@ fn main() {
             }
         });
         
-        let transform_loc = unsafe { gl::GetUniformLocation(shader.get_id(), "transform".as_ptr() as *const i8) };
+        let modelLoc = unsafe { gl::GetUniformLocation(shader.get_id(), std::ffi::CString::new("model").unwrap().as_ptr()) };
+        let viewLoc = unsafe { gl::GetUniformLocation(shader.get_id(), "view\0".as_ptr() as *const i8) };
         // Rendering commands here
         unsafe {
             // default clear color
@@ -138,13 +148,17 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT);
             // link shaders
             
+            shader.use_shader();        
             // bind texture 
             gl::ActiveTexture(gl::TEXTURE0);
             gl::BindTexture(gl::TEXTURE_2D, texture1.get_id());
             gl::ActiveTexture(gl::TEXTURE1);
             gl::BindTexture(gl::TEXTURE_2D, texture2.get_id());
-            let data: [f32; 16] = trans.to_cols_array();
-            gl::UniformMatrix4fv(transform_loc, 1, gl::FALSE, data.as_ptr() as *const f32);
+            let model_data: [f32; 16] = model.to_cols_array();
+            gl::UniformMatrix4fv(modelLoc, 1, gl::FALSE, model_data.as_ptr() as *const f32);  
+            let view_data: [f32; 16] = view.to_cols_array();
+            gl::UniformMatrix4fv(viewLoc, 1, gl::FALSE, view_data.as_ptr() as *const f32);
+            shader.set_mat4("projection",projection);
             //shader.use_shader();
             // bind vertex array object
             gl::BindVertexArray(vao);

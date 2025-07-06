@@ -94,6 +94,12 @@ impl Shader {
         unsafe { gl::Uniform1f(location, value) };
     }
 
+    pub fn set_mat4(&self, name: &str, value: glam::Mat4) {
+        let location = self.get_uniform_location(name);
+        let data: [f32; 16] = value.to_cols_array();
+        unsafe { gl::UniformMatrix4fv(location, 1, gl::FALSE, data.as_ptr() as * const f32) };
+    }
+
     pub fn set_int(&self, name: &str, value: i32) {
         let location = self.get_uniform_location(name);
         unsafe { gl::Uniform1i(location, value) };
