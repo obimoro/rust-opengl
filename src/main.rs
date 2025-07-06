@@ -12,18 +12,18 @@ use glam;
 mod shaderprogram;
 mod texture;
 
-
 // global values
 const WIN_WIDTH: u32 = 1024;
 const WIN_HEIGHT: u32 = 840;
 
 // Main loop
 fn main() {
+    
     let mut glfw = glfw::init(glfw::fail_on_errors).unwrap();
-
+    
     // Create a windowed mode window and its OpenGL context
     let (mut window, events) = glfw.create_window(WIN_WIDTH, WIN_HEIGHT, "Welcome to openGL with Rust!", glfw::WindowMode::Windowed)
-        .expect("Failed to create GLFW window.");
+    .expect("Failed to create GLFW window.");
 
     // Make the window's context current
     window.make_current();
@@ -47,20 +47,20 @@ fn main() {
     // vertex data
     let vertices: [f32; 32] = [ 
         // position     // colors      // texture cords
-         0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 2.0, 2.0, // top right
-         0.5,-0.5, 0.0, 0.0, 1.0, 0.0, 2.0, 0.0, // bottom right
+         0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, // top right
+         0.5,-0.5, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, // bottom right
         -0.5,-0.5, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, // bottom left
-        -0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 2.0];// top left
+        -0.5, 0.5, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0];// top left
 
     // indices data
     let indices: [i32; 6] = [
         0, 1, 2, // first triangle
         0, 2, 3 // second triangle
-    ];
-    
-    // VBO
-    let mut vbo: u32 = 0;
-    
+        ];
+        
+        // VBO
+        let mut vbo: u32 = 0;
+        
     // VAO
     let mut vao: u32 = 0;
 
@@ -101,13 +101,22 @@ fn main() {
      let texture1 = texture::Texture::new("./resources/texture/container.jpg").unwrap();
      let texture2 = texture::Texture::new("./resources/texture/rust_icon.png").unwrap();
     
-    shader.use_shader();    
-    shader.set_int("texture1", 0);
-    shader.set_int("texture2", 1);
-
-    
-    // Loop until the user closes the window
-    while !window.should_close() {
+     shader.use_shader();    
+     shader.set_int("texture1", 0);
+     shader.set_int("texture2", 1);
+     
+     // Loop until the user closes the window
+     while !window.should_close() {
+         let time = unsafe { glfw::ffi::glfwGetTime() as f32 };
+         println!("{}", time);
+         let mut vec = glam::Vec4::new(1.0, 0.0, 0.0, 1.0);
+         let mut trans = glam::Mat4::IDENTITY;
+         //trans = trans * glam::Mat4::from_translation(glam::Vec3::new(1.0, 1.0, 0.0));
+         trans = trans * glam::Mat4::from_rotation_translation(glam::Quat::from_axis_angle(glam::Vec3::Z, time), glam::Vec3::new(0.0, 0.0, 1.0));
+         trans = trans * glam::Mat4::from_scale(glam::Vec3::new(0.5, 0.5, 0.5));
+         vec = trans * vec;   
+         //println!("x: {}, y: {} z: {}, w: {}", vec.x, vec.y, vec.z, vec.w);
+         
         // input
         for (_, event)  in glfw::flush_messages(&events) {
             handle_window_event(&mut window, event);
@@ -120,6 +129,7 @@ fn main() {
             }
         });
         
+        let transform_loc = unsafe { gl::GetUniformLocation(shader.get_id(), "transform".as_ptr() as *const i8) };
         // Rendering commands here
         unsafe {
             // default clear color
@@ -133,13 +143,9 @@ fn main() {
             gl::BindTexture(gl::TEXTURE_2D, texture1.get_id());
             gl::ActiveTexture(gl::TEXTURE1);
             gl::BindTexture(gl::TEXTURE_2D, texture2.get_id());
-
-            // create transformations
-            let mut transform = glam::Mat4::IDENTITY;
-            let translation = glam::Vec3::new(0.5, -0.5, 0.0);
-            
-
-            shader.use_shader();
+            let data: [f32; 16] = trans.to_cols_array();
+            gl::UniformMatrix4fv(transform_loc, 1, gl::FALSE, data.as_ptr() as *const f32);
+            //shader.use_shader();
             // bind vertex array object
             gl::BindVertexArray(vao);
             // Draw triangle

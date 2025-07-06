@@ -85,6 +85,10 @@ impl Shader {
         }
     }
 
+    pub fn get_id(&self)  -> u32 {
+        self.id
+    }
+
     pub fn set_float(&self, name: &str, value: f32) {
         let location = self.get_uniform_location(name);
         unsafe { gl::Uniform1f(location, value) };
