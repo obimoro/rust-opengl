@@ -1,20 +1,21 @@
+use std::char::CharTryFromError;
+
 // -------------------------------------------------------------
 //
 // Rustify https://learnopengl.com/
 //
 // -------------------------------------------------------------
-use glfw::{Action, Context, Key, Window};
-use glfw::ffi::glfwGetTime;
+use glfw::{ffi::{glfwSetCursorPosCallback, glfwSetScrollCallback}, Action, Context, Key};
 extern crate gl;
-use gl::{types::*, Disable};
 use glam;
 
+mod constants;
 mod shaderprogram;
 mod texture;
+mod camera;
 
 // global values
-const WIN_WIDTH: u32 = 1024;
-const WIN_HEIGHT: u32 = 840;
+use constants::{WIN_WIDTH, WIN_HEIGHT};
 
 
 // Main loop
@@ -33,14 +34,14 @@ fn main() {
     // Normal, Hidden and Disabled
     // Normal is a mouse that can exit window, hidden does the same but doesnt show cursor
     // Disabled lockes the mouse to the glfw window
-    window.set_cursor_mode(glfw::CursorMode::Disabled);
-
+    //window.set_cursor_mode(glfw::CursorMode::Disabled);
 
 
     // init GL
-    let gl = gl::load_with(|s| window.get_proc_address(s) as *const _);
+    let _gl = gl::load_with(|s| window.get_proc_address(s) as *const _);
     unsafe {
-        gl::Enable(gl::DEPTH_TEST);
+        gl::Enable(gl::DEPTH_TEST); 
+
     }
     // Max nr of vertex supported
     let mut nr_attributes = 0;
@@ -55,8 +56,7 @@ fn main() {
     }
 
     // Timing 
-    let mut deltaTime = 0.0;
-    let mut lastFrame = 0.0;
+    let mut last_frame = 0.0;
     
     // cube vertex data
     let vertices: [f32; 180] = [
@@ -105,7 +105,7 @@ fn main() {
     ];
 
     // Cubes position in the world space
-    let cubePositions: [glam::Vec3; 10] = [    
+    let cube_positions: [glam::Vec3; 10] = [    
         glam::Vec3::new( 0.0,  0.0,  0.0), 
         glam::Vec3::new( 2.0,  5.0, -15.0), 
         glam::Vec3::new(-1.5, -2.2, -2.5),  
@@ -124,14 +124,14 @@ fn main() {
     //     0, 2, 3 // second triangle
     //     ];
         
-        // VBO
-        let mut vbo: u32 = 0;
-        
+    // VBO
+    let mut vbo: u32 = 0;
+    
     // VAO
     let mut vao: u32 = 0;
 
     // EBO
-    let mut ebo: u32 = 0;
+    let ebo: u32 = 0;
     unsafe {
         gl::GenVertexArrays(1, &mut vao);
         // 0. copy vertices array in a buffer for openGL to use
@@ -162,39 +162,35 @@ fn main() {
     // Init shader
     let shader = shaderprogram::Shader::shader_program("./src/shaders/default.vert", "./src/shaders/default.frag");
     
-    
     // init texture
-     let texture1 = texture::Texture::new("./resources/texture/256_256.png").unwrap();
+    let texture1 = texture::Texture::new("./resources/texture/512_512.png").unwrap();
     //  let texture2 = texture::Texture::new("./resources/texture/rust_icon.png").unwrap();
-    
      shader.use_shader();    
      shader.set_int("texture1", 0);
      //shader.set_int("texture2", 1);
      
-     let mut cameraPos = glam::Vec3::new(0.0, 0.0, 3.0);
-     let cameraFront = glam::Vec3::new(0.0, 0.0, -1.0);
-     let cameraUp = glam::Vec3::new(0.0, 1.0, 0.0);
+    // init camera
+    let mut camera = camera::Camera::new();
+    //window.set_cursor_pos_callback(camera.mouse_callback(&mut window));
 
-     // Loop until the user closes the window
-     while !window.should_close() {
-        let pos = window.get_cursor_pos();
-        println!("{:?}", pos);
-        let mut currentFrame = unsafe { glfw::ffi::glfwGetTime() as f32 };
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-         
-        let mut model = glam::Mat4::IDENTITY;
-        //model = model * glam::Mat4::from_rotation_translation(glam::Quat::from_axis_angle(glam::Vec3::X, -55.0), glam::Vec3::new(1.0, 0.0,0.0));
-        //model = model * glam::Mat4::from_rotation_x(-55.0_f32.to_radians());
-        model = model * glam::Mat4::from_rotation_x((deltaTime * 50.0_f32.to_radians()));
-        model = model * glam::Mat4::from_rotation_y((deltaTime * 50.0_f32.to_radians()));
-        let mut view = glam::Mat4::IDENTITY;
+    
+    
+    
+    // Loop until the user closes the window
+    while !window.should_close() {
+        let current_frame = unsafe { glfw::ffi::glfwGetTime() as f32 };
+        let delta_time = current_frame - last_frame;
+        last_frame = current_frame;
+        
+        // view
+        //let mut view = glam::Mat4::IDENTITY;
         //view = view * glam::Mat4::from_translation(glam::Vec3::new(0.0, 0.0, -3.0));
-        view = glam::Mat4::look_at_rh(cameraPos,cameraPos + cameraFront, cameraUp);
+        let view = glam::Mat4::look_at_rh(camera.get_position(),camera.get_position() + camera.get_front(), camera.get_up());
         
         let mut projection = glam::Mat4::IDENTITY;
         // rh stands for right hand
-        projection = projection * glam::Mat4::perspective_rh(60.0_f32.to_radians(), (WIN_WIDTH / WIN_HEIGHT) as f32, 0.1, 100.0);
+        projection = projection * glam::Mat4::perspective_rh(camera.get_fov().to_radians(), (WIN_WIDTH / WIN_HEIGHT) as f32, 0.1, 100.0);
+
         //  let mut vec = glam::Vec4::new(1.0, 0.0, 0.0, 1.0);
         //  let mut trans = glam::Mat4::IDENTITY;
         //  trans = trans * glam::Mat4::from_transla<tion(glam::Vec3::new(0.5, -0.5, 0.0));
@@ -208,8 +204,8 @@ fn main() {
             handle_window_event(&mut window, event);
         }
         
-        process_input(&mut window, &mut cameraPos, &cameraFront, &cameraUp, &deltaTime);
-        
+
+        camera.process_input(&mut window, &delta_time);
         // resize viewport if window is resized
         window.set_framebuffer_size_callback(|_, width, height| {
             unsafe {
@@ -217,8 +213,8 @@ fn main() {
             }
         });
         
-        let modelLoc = unsafe { gl::GetUniformLocation(shader.get_id(), std::ffi::CString::new("model").unwrap().as_ptr()) };
-        let viewLoc = unsafe { gl::GetUniformLocation(shader.get_id(), "view\0".as_ptr() as *const i8) };
+        let model_location = unsafe { gl::GetUniformLocation(shader.get_id(), std::ffi::CString::new("model").unwrap().as_ptr()) };
+        let view_location = unsafe { gl::GetUniformLocation(shader.get_id(), "view\0".as_ptr() as *const i8) };
         // Rendering commands here
         unsafe {
             // default clear color
@@ -233,17 +229,18 @@ fn main() {
             gl::BindTexture(gl::TEXTURE_2D, texture1.get_id());
             // gl::ActiveTexture(gl::TEXTURE1);
             // gl::BindTexture(gl::TEXTURE_2D, texture2.get_id());
+            let mut model = glam::Mat4::IDENTITY;
             let model_data: [f32; 16] = model.to_cols_array();
-            gl::UniformMatrix4fv(modelLoc, 1, gl::FALSE, model_data.as_ptr() as *const f32);  
+            gl::UniformMatrix4fv(model_location, 1, gl::FALSE, model_data.as_ptr() as *const f32);  
             let view_data: [f32; 16] = view.to_cols_array();
-            gl::UniformMatrix4fv(viewLoc, 1, gl::FALSE, view_data.as_ptr() as *const f32);
+            gl::UniformMatrix4fv(view_location, 1, gl::FALSE, view_data.as_ptr() as *const f32);
             shader.set_mat4("projection",projection);
             //shader.use_shader();
             // bind vertex array object
             gl::BindVertexArray(vao);
-            for x in 0..cubePositions.len() {
+            for x in 0..cube_positions.len() {
                 model = glam::Mat4::IDENTITY;
-                model = model * glam::Mat4::from_translation(cubePositions[x]);
+                model = model * glam::Mat4::from_translation(cube_positions[x]);
                 let mut angle = 25.0 * x as f32;
                 model = model * glam::Mat4::from_rotation_x(angle.to_radians());
                 model = model * glam::Mat4::from_rotation_y(angle.to_radians());
@@ -252,16 +249,27 @@ fn main() {
                 if x % 3 == 0 {
                     angle = 25.0 *  glfw::ffi::glfwGetTime() as f32 ;
                     model = model * glam::Mat4::from_axis_angle((glam::Vec3::new(1.0, 0.3, 0.5)).normalize(), angle.to_radians());
+                
                 }
-
 
                 shader.set_mat4("model",model);
                 gl::DrawArrays(gl::TRIANGLES, 0,36);
+
             }
-            // Draw triangle
-            //  gl::DrawArrays(gl::TRIANGLES, 0, 3);
-            // Draw a square
-             //gl::DrawElements(gl::TRIANGLES, indices.len() as i32, gl::UNSIGNED_INT,std::ptr::null());
+            
+
+            // for x in 0..10 {
+            //     for z in 0..10 {
+
+            //         model = glam::Mat4::IDENTITY;
+            //         model = model * glam::Mat4::from_translation(glam::Vec3::new(x as f32, 0.0, z as f32));
+    
+            //         shader.set_mat4("model",model);
+            //         gl::DrawArrays(gl::TRIANGLES, 0,36);
+            //     }
+
+            
+            // }
         }
 
         // Poll for and process events
@@ -277,22 +285,6 @@ fn main() {
         gl::DeleteBuffers(1, &ebo);
     }
     
-}
-
-fn process_input(window: &mut glfw::Window, cameraPos: &mut glam::Vec3, cameraFront: &glam::Vec3, cameraUp: &glam::Vec3, deltaTime: &f32) {
-    let cameraSpeed: f32 = 2.5 * *deltaTime;
-    if window.get_key(glfw::Key::W) == glfw::Action::Press {
-        *cameraPos += cameraSpeed * *cameraFront;
-    }
-    if window.get_key(glfw::Key::S) == glfw::Action::Press {
-        *cameraPos -= cameraSpeed * *cameraFront;
-    }
-    if window.get_key(glfw::Key::A) == glfw::Action::Press {
-        *cameraPos -= cameraSpeed * (*cameraFront).cross(*cameraUp).normalize();
-    }
-    if window.get_key(glfw::Key::D) == glfw::Action::Press {
-        *cameraPos += cameraSpeed * (*cameraFront).cross(*cameraUp).normalize();
-    }
 }
 
 fn handle_window_event(window: &mut glfw::Window, event: glfw::WindowEvent) {
@@ -313,15 +305,5 @@ fn handle_window_event(window: &mut glfw::Window, event: glfw::WindowEvent) {
         }
         _ => {}
     }
-}
-
-fn mouse_callback(xpos: f64,ypos: f64) {
-    let firstMouse = true;
-
-    if firstMouse {
-        let lastX = xpos;
-        let lastY = ypos;
-    }
-
 }
 

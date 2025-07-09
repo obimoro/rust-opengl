@@ -1,4 +1,4 @@
-use image::{GenericImageView, DynamicImage};
+use image::{DynamicImage};
 use gl;
 
 pub struct Texture {
