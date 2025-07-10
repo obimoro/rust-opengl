@@ -26,7 +26,7 @@ impl Camera {
     pub fn new() -> Self {
         // Creates a new camera with the given initial position, front direction and up direction
         Camera {
-            position: glam::Vec3::new(0.0, 0.0,0.0),
+            position: glam::Vec3::new(0.0, 0.0,3.0),
             front: glam::Vec3::new(0.0, 0.0,-1.0),
             up: glam::Vec3::new(0.0, 1.0,0.0),
             // other initialize properrties goes here
@@ -34,7 +34,7 @@ impl Camera {
             pitch: 0.0,
             last_x: WIN_WIDTH as f32 / 2.0,
             last_y: WIN_HEIGHT as f32  / 2.0,
-            fov: 90.0,
+            fov: 66.0,
         }
     }
 
@@ -58,10 +58,15 @@ impl Camera {
         
     }
 
+    pub fn set_fov(&mut self, fov: f32) {
+        self.fov = fov;
+        
+    }
+
 
     // Processes input from the window and updates the camera's position accordingly.
     pub fn process_input(&mut self, window: &mut glfw::Window, delta_time: &f32) {
-        let camera_speed: f32 = 2.5 * delta_time;
+        let camera_speed: f32 = 10.0 * delta_time;
         if window.get_key(glfw::Key::W) == glfw::Action::Press {
             self.position += camera_speed * self.front;
         }
@@ -80,5 +85,26 @@ impl Camera {
         if window.get_key(glfw::Key::LeftControl) == glfw::Action::Press {
             self.position -= camera_speed * self.up;
         }
+        if window.get_key(glfw::Key::Q) == glfw::Action::Press {
+            self.fov += 1.0;
+        }
+        if window.get_key(glfw::Key::E) == glfw::Action::Press {
+            self.fov -= 1.0;
+        }
     }
+
+    pub fn mouse_callback(&mut self, xpos: f64, ypos: f64) {
+        let xoffset = (xpos as f32 - self.last_x) * 0.1;
+        let yoffset = (self.last_y - (ypos as f32)) * 0.1;
+
+        self.yaw += xoffset;
+        self.pitch += yoffset;
+
+        // Add some constraints to the minimum/maximum pitch values
+        self.pitch = self.pitch.clamp(-89.0, 89.0);
+
+        self.last_x = xpos as f32;
+        self.last_y = ypos as f32;
+    }
+
 }

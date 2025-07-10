@@ -8,6 +8,8 @@ use std::char::CharTryFromError;
 use glfw::{ffi::{glfwSetCursorPosCallback, glfwSetScrollCallback}, Action, Context, Key};
 extern crate gl;
 use glam;
+use log::{debug, error, log_enabled, info, Level};
+
 
 mod constants;
 mod shaderprogram;
@@ -20,12 +22,19 @@ use constants::{WIN_WIDTH, WIN_HEIGHT};
 
 // Main loop
 fn main() {
+    // init logger
+    env_logger::builder()
+    .default_format()
+    .format_line_number(true)
+    .init();
+
     // init glfw
     let mut glfw = glfw::init(glfw::fail_on_errors).unwrap();
+    info!("Init glfw");
     
     // Create a windowed mode window and its OpenGL context
     let (mut window, events) = glfw.create_window(WIN_WIDTH, WIN_HEIGHT, "Welcome to openGL with Rust!", glfw::WindowMode::Windowed)
-    .expect("Failed to create GLFW window.");
+                                                                .expect("msg");
     
 
     // Make the window's context current
@@ -35,7 +44,16 @@ fn main() {
     // Normal is a mouse that can exit window, hidden does the same but doesnt show cursor
     // Disabled lockes the mouse to the glfw window
     //window.set_cursor_mode(glfw::CursorMode::Disabled);
+    // Test to see if device supports raw mouse motion
+    // Raw mouse motion is better for controlling for example a 3D camera. 
+    // cursor needs to be disabled
+    let raw_mouse_support = unsafe {glfw::ffi::glfwRawMouseMotionSupported()};
 
+    match raw_mouse_support {
+        0 => info!("Raw mouse motion is not supported"),
+        1 => info!("Raw mouse motion is supported"),
+        _ => info!("Unkown raw mouse motion support status"),
+    }
 
     // init GL
     let _gl = gl::load_with(|s| window.get_proc_address(s) as *const _);
@@ -48,12 +66,13 @@ fn main() {
     unsafe {
         gl::GetIntegerv(gl::MAX_VERTEX_ATTRIBS, &mut nr_attributes);
     }
-    println!("Maximum nr of vertex attributes supported: {}", nr_attributes);
+    info!("Maximum nr of vertex attributes supported: {}", nr_attributes);
 
     // set the viewport for openGL
     unsafe {
-        gl::Viewport(0, 0,WIN_WIDTH as i32, WIN_HEIGHT as i32);
+        gl::Viewport(0, 0, WIN_WIDTH as i32, WIN_HEIGHT as i32);
     }
+
 
     // Timing 
     let mut last_frame = 0.0;
@@ -173,11 +192,11 @@ fn main() {
     let mut camera = camera::Camera::new();
     //window.set_cursor_pos_callback(camera.mouse_callback(&mut window));
 
-    
-    
-    
+
+
     // Loop until the user closes the window
     while !window.should_close() {
+        //camera.mouse_callback(&mut window);
         let current_frame = unsafe { glfw::ffi::glfwGetTime() as f32 };
         let delta_time = current_frame - last_frame;
         last_frame = current_frame;
@@ -212,6 +231,7 @@ fn main() {
                 gl::Viewport(0,0, width as i32, height as i32);
             }
         });
+
         
         let model_location = unsafe { gl::GetUniformLocation(shader.get_id(), std::ffi::CString::new("model").unwrap().as_ptr()) };
         let view_location = unsafe { gl::GetUniformLocation(shader.get_id(), "view\0".as_ptr() as *const i8) };
@@ -238,6 +258,8 @@ fn main() {
             //shader.use_shader();
             // bind vertex array object
             gl::BindVertexArray(vao);
+
+            // Render goes here
             for x in 0..cube_positions.len() {
                 model = glam::Mat4::IDENTITY;
                 model = model * glam::Mat4::from_translation(cube_positions[x]);
@@ -258,17 +280,26 @@ fn main() {
             }
             
 
-            // for x in 0..10 {
-            //     for z in 0..10 {
+            // for x in 0..20 {
+            //     for y in 0..20 {
+            //         for z in 0..20{
 
-            //         model = glam::Mat4::IDENTITY;
-            //         model = model * glam::Mat4::from_translation(glam::Vec3::new(x as f32, 0.0, z as f32));
-    
-            //         shader.set_mat4("model",model);
-            //         gl::DrawArrays(gl::TRIANGLES, 0,36);
+            //             if x % 2 == 0 {
+            //                 if y % 2 == 0 { 
+            //                     if z % 2 == 0 {
+
+
+            //                         model = glam::Mat4::IDENTITY;
+            //                         model = model * glam::Mat4::from_translation(glam::Vec3::new(x as f32  * 1.2, y as f32  * 1.2, z as f32 * 1.2));
+
+            //                         shader.set_mat4("model",model);
+            //                         gl::DrawArrays(gl::TRIANGLES, 0,36);
+            //                     }
+            //                 }
+            //             }
+            //         } 
             //     }
 
-            
             // }
         }
 
