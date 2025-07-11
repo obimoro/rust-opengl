@@ -14,27 +14,36 @@ pub struct Camera {
     front: glam::Vec3,
     up: glam::Vec3,
 
-    yaw: f32,
-    pitch: f32,
-    last_x: f32,
-    last_y: f32,
+    first_mouse: bool,
+    yaw: f64,
+    pitch: f64,
+    last_x: f64,
+    last_y: f64,
     fov: f32,
     // other camera proerties goes here
+    
 }
 
 impl Camera {
+    const MIN_FOV: f32 = 1.0;
+    const MAX_FOV: f32 = 45.0;
+
+    const MIN_PITCH: f64 = -89.0;
+    const MAX_PITCH: f64 = 89.0;
+
     pub fn new() -> Self {
         // Creates a new camera with the given initial position, front direction and up direction
         Camera {
-            position: glam::Vec3::new(0.0, 0.0,3.0),
-            front: glam::Vec3::new(0.0, 0.0,-1.0),
+            position: glam::Vec3::new(0.0, 0.0,0.0),
+            front: glam::Vec3::new(0.0, 0.0,-3.0),
             up: glam::Vec3::new(0.0, 1.0,0.0),
             // other initialize properrties goes here
-            yaw: -90.0,
+            first_mouse: true,
+            yaw: 90.0,
             pitch: 0.0,
-            last_x: WIN_WIDTH as f32 / 2.0,
-            last_y: WIN_HEIGHT as f32  / 2.0,
-            fov: 66.0,
+            last_x: WIN_WIDTH as f64 / 2.0,
+            last_y: WIN_HEIGHT as f64  / 2.0,
+            fov: 45.0,
         }
     }
 
@@ -57,11 +66,14 @@ impl Camera {
         self.fov
         
     }
+    pub fn set_fov(&mut self, yoffset: f64) {
 
-    pub fn set_fov(&mut self, fov: f32) {
-        self.fov = fov;
+        self.fov += yoffset as f32;
+        
+        
         
     }
+
 
 
     // Processes input from the window and updates the camera's position accordingly.
@@ -87,24 +99,48 @@ impl Camera {
         }
         if window.get_key(glfw::Key::Q) == glfw::Action::Press {
             self.fov += 1.0;
+                if self.fov > Self::MAX_FOV {
+                self.fov = Self::MAX_FOV;
+            }
         }
         if window.get_key(glfw::Key::E) == glfw::Action::Press {
             self.fov -= 1.0;
+            if self.fov < Self::MIN_FOV {
+                self.fov = Self::MIN_FOV;
+            }
         }
     }
 
+
     pub fn mouse_callback(&mut self, xpos: f64, ypos: f64) {
-        let xoffset = (xpos as f32 - self.last_x) * 0.1;
-        let yoffset = (self.last_y - (ypos as f32)) * 0.1;
+        if self.first_mouse {
+            self.last_x = xpos;
+            self.last_y = ypos;
+            self.first_mouse = false;
+        }
+
+        let mut xoffset = xpos - self.last_x;
+        let mut yoffset = self.last_y - ypos;
+        self.last_x = xpos;
+        self.last_y = ypos;
+
+        let sensitivity = 0.1;
+        xoffset *= sensitivity;
+        yoffset *= sensitivity;
 
         self.yaw += xoffset;
         self.pitch += yoffset;
 
-        // Add some constraints to the minimum/maximum pitch values
-        self.pitch = self.pitch.clamp(-89.0, 89.0);
+        // make sure that pitch doesnt flipp screen when out of bounds
+        self.pitch = self.pitch.clamp(Self::MIN_PITCH, Self::MAX_PITCH);
 
-        self.last_x = xpos as f32;
-        self.last_y = ypos as f32;
+        let direction = glam::Vec3::new((self.yaw.to_radians().cos() * self.pitch.to_radians().cos()) as f32,
+                                                self.pitch.to_radians().sin() as f32,
+                                                (self.yaw.to_radians().sin() * self.pitch.to_radians().cos()) as f32,
+
+        );
+        self.front = direction.normalize();
     }
+
 
 }

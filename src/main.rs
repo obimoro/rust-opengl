@@ -16,6 +16,7 @@ mod shaderprogram;
 mod texture;
 mod camera;
 
+
 // global values
 use constants::{WIN_WIDTH, WIN_HEIGHT};
 
@@ -43,17 +44,27 @@ fn main() {
     // Normal, Hidden and Disabled
     // Normal is a mouse that can exit window, hidden does the same but doesnt show cursor
     // Disabled lockes the mouse to the glfw window
-    //window.set_cursor_mode(glfw::CursorMode::Disabled);
+    window.set_cursor_mode(glfw::CursorMode::Normal);
     // Test to see if device supports raw mouse motion
     // Raw mouse motion is better for controlling for example a 3D camera. 
     // cursor needs to be disabled
     let raw_mouse_support = unsafe {glfw::ffi::glfwRawMouseMotionSupported()};
 
-    match raw_mouse_support {
-        0 => info!("Raw mouse motion is not supported"),
-        1 => info!("Raw mouse motion is supported"),
-        _ => info!("Unkown raw mouse motion support status"),
-    }
+    let enable_raw_mouse_motion = match raw_mouse_support {
+        0 => {
+            info!("Raw mouse motion is not supported");
+            false
+        },
+        1 => {
+            info!("Raw mouse motion is supported");
+            true
+        },
+        _ => {
+            info!("Unkown raw mouse motion support status");
+            false
+        },
+    };
+    window.set_raw_mouse_motion(enable_raw_mouse_motion);
 
     // init GL
     let _gl = gl::load_with(|s| window.get_proc_address(s) as *const _);
@@ -191,12 +202,20 @@ fn main() {
     // init camera
     let mut camera = camera::Camera::new();
     //window.set_cursor_pos_callback(camera.mouse_callback(&mut window));
+    //camera.scroll_callback(&mut window);
+    
+    // Set up a scroll callback
 
+    // window.set_scroll_callback(move |_, _, yoffset| {
+    //     println!("{}, {}", yoffset, camera.get_fov());
 
+    //     // Handle the scroll event here
+    // });
 
+    
     // Loop until the user closes the window
     while !window.should_close() {
-        //camera.mouse_callback(&mut window);
+
         let current_frame = unsafe { glfw::ffi::glfwGetTime() as f32 };
         let delta_time = current_frame - last_frame;
         last_frame = current_frame;
@@ -205,7 +224,6 @@ fn main() {
         //let mut view = glam::Mat4::IDENTITY;
         //view = view * glam::Mat4::from_translation(glam::Vec3::new(0.0, 0.0, -3.0));
         let view = glam::Mat4::look_at_rh(camera.get_position(),camera.get_position() + camera.get_front(), camera.get_up());
-        
         let mut projection = glam::Mat4::IDENTITY;
         // rh stands for right hand
         projection = projection * glam::Mat4::perspective_rh(camera.get_fov().to_radians(), (WIN_WIDTH / WIN_HEIGHT) as f32, 0.1, 100.0);
@@ -223,8 +241,12 @@ fn main() {
             handle_window_event(&mut window, event);
         }
         
-
+        // Gets mouse position to feed to mouse callback function
+        // makes so you can look around
+        let mouse_pos = glfw::Window::get_cursor_pos(&mut window);
+        camera.mouse_callback(mouse_pos.0, mouse_pos.1);
         camera.process_input(&mut window, &delta_time);
+
         // resize viewport if window is resized
         window.set_framebuffer_size_callback(|_, width, height| {
             unsafe {
@@ -334,6 +356,11 @@ fn handle_window_event(window: &mut glfw::Window, event: glfw::WindowEvent) {
                 gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
             }
         }
+        glfw::WindowEvent::Scroll(_, _) =>{
+            
+            println!("I am scrolling");
+
+        } 
         _ => {}
     }
 }
