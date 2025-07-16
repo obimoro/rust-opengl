@@ -15,6 +15,7 @@ mod constants;
 mod shaderprogram;
 mod texture;
 mod camera;
+mod cube;
 
 
 // global values
@@ -44,7 +45,7 @@ fn main() {
     // Normal, Hidden and Disabled
     // Normal is a mouse that can exit window, hidden does the same but doesnt show cursor
     // Disabled lockes the mouse to the glfw window
-    window.set_cursor_mode(glfw::CursorMode::Normal);
+    window.set_cursor_mode(glfw::CursorMode::Disabled);
     // Test to see if device supports raw mouse motion
     // Raw mouse motion is better for controlling for example a 3D camera. 
     // cursor needs to be disabled
@@ -89,64 +90,64 @@ fn main() {
     let mut last_frame = 0.0;
     
     // cube vertex data
-    let vertices: [f32; 180] = [
-    //   // position     // colors      // texture cords
-        -0.5, -0.5, -0.5,  0.0, 0.0,
-         0.5, -0.5, -0.5,  1.0, 0.0,
-         0.5,  0.5, -0.5,  1.0, 1.0,
-         0.5,  0.5, -0.5,  1.0, 1.0,
-        -0.5,  0.5, -0.5,  0.0, 1.0,
-        -0.5, -0.5, -0.5,  0.0, 0.0,
+    // let vertices: [f32; 180] = [
+    // //   // position       // texture cords
+    //     -0.5, -0.5, -0.5,  0.0, 0.0,
+    //      0.5, -0.5, -0.5,  1.0, 0.0,
+    //      0.5,  0.5, -0.5,  1.0, 1.0,
+    //      0.5,  0.5, -0.5,  1.0, 1.0,
+    //     -0.5,  0.5, -0.5,  0.0, 1.0,
+    //     -0.5, -0.5, -0.5,  0.0, 0.0,
         
-        -0.5, -0.5,  0.5,  0.0, 0.0,
-         0.5, -0.5,  0.5,  1.0, 0.0,
-         0.5,  0.5,  0.5,  1.0, 1.0,
-         0.5,  0.5,  0.5,  1.0, 1.0,
-        -0.5,  0.5,  0.5,  0.0, 1.0,
-        -0.5, -0.5,  0.5,  0.0, 0.0,
+    //     -0.5, -0.5,  0.5,  0.0, 0.0,
+    //      0.5, -0.5,  0.5,  1.0, 0.0,
+    //      0.5,  0.5,  0.5,  1.0, 1.0,
+    //      0.5,  0.5,  0.5,  1.0, 1.0,
+    //     -0.5,  0.5,  0.5,  0.0, 1.0,
+    //     -0.5, -0.5,  0.5,  0.0, 0.0,
         
-        -0.5,  0.5,  0.5,  1.0, 0.0,
-        -0.5,  0.5, -0.5,  1.0, 1.0,
-        -0.5, -0.5, -0.5,  0.0, 1.0,
-        -0.5, -0.5, -0.5,  0.0, 1.0,
-        -0.5, -0.5,  0.5,  0.0, 0.0,
-        -0.5,  0.5,  0.5,  1.0, 0.0,
+    //     -0.5,  0.5,  0.5,  1.0, 0.0,
+    //     -0.5,  0.5, -0.5,  1.0, 1.0,
+    //     -0.5, -0.5, -0.5,  0.0, 1.0,
+    //     -0.5, -0.5, -0.5,  0.0, 1.0,
+    //     -0.5, -0.5,  0.5,  0.0, 0.0,
+    //     -0.5,  0.5,  0.5,  1.0, 0.0,
         
-         0.5,  0.5,  0.5,  1.0, 0.0,
-         0.5,  0.5, -0.5,  1.0, 1.0,
-         0.5, -0.5, -0.5,  0.0, 1.0,
-         0.5, -0.5, -0.5,  0.0, 1.0,
-         0.5, -0.5,  0.5,  0.0, 0.0,
-         0.5,  0.5,  0.5,  1.0, 0.0,
+    //      0.5,  0.5,  0.5,  1.0, 0.0,
+    //      0.5,  0.5, -0.5,  1.0, 1.0,
+    //      0.5, -0.5, -0.5,  0.0, 1.0,
+    //      0.5, -0.5, -0.5,  0.0, 1.0,
+    //      0.5, -0.5,  0.5,  0.0, 0.0,
+    //      0.5,  0.5,  0.5,  1.0, 0.0,
         
-        -0.5, -0.5, -0.5,  0.0, 1.0,
-         0.5, -0.5, -0.5,  1.0, 1.0,
-         0.5, -0.5,  0.5,  1.0, 0.0,
-         0.5, -0.5,  0.5,  1.0, 0.0,
-        -0.5, -0.5,  0.5,  0.0, 0.0,
-        -0.5, -0.5, -0.5,  0.0, 1.0,
+    //     -0.5, -0.5, -0.5,  0.0, 1.0,
+    //      0.5, -0.5, -0.5,  1.0, 1.0,
+    //      0.5, -0.5,  0.5,  1.0, 0.0,
+    //      0.5, -0.5,  0.5,  1.0, 0.0,
+    //     -0.5, -0.5,  0.5,  0.0, 0.0,
+    //     -0.5, -0.5, -0.5,  0.0, 1.0,
 
-        -0.5,  0.5, -0.5,  0.0, 1.0,
-         0.5,  0.5, -0.5,  1.0, 1.0,
-         0.5,  0.5,  0.5,  1.0, 0.0,
-         0.5,  0.5,  0.5,  1.0, 0.0,
-        -0.5,  0.5,  0.5,  0.0, 0.0,
-        -0.5,  0.5, -0.5,  0.0, 1.0
-    ];
+    //     -0.5,  0.5, -0.5,  0.0, 1.0,
+    //      0.5,  0.5, -0.5,  1.0, 1.0,
+    //      0.5,  0.5,  0.5,  1.0, 0.0,
+    //      0.5,  0.5,  0.5,  1.0, 0.0,
+    //     -0.5,  0.5,  0.5,  0.0, 0.0,
+    //     -0.5,  0.5, -0.5,  0.0, 1.0
+    // ];
 
     // Cubes position in the world space
-    let cube_positions: [glam::Vec3; 10] = [    
-        glam::Vec3::new( 0.0,  0.0,  0.0), 
-        glam::Vec3::new( 2.0,  5.0, -15.0), 
-        glam::Vec3::new(-1.5, -2.2, -2.5),  
-        glam::Vec3::new(-3.8, -2.0, -12.0),  
-        glam::Vec3::new( 2.4, -0.4, -3.5),  
-        glam::Vec3::new(-1.7,  3.0, -7.5),  
-        glam::Vec3::new( 1.3, -2.0, -2.5),  
-        glam::Vec3::new( 1.5,  2.0, -2.5), 
-        glam::Vec3::new( 1.5,  0.2, -1.5), 
-        glam::Vec3::new(-1.3,  1.0, -1.5)  
-    ];
+    // let cube_positions: [glam::Vec3; 10] = [    
+    //     glam::Vec3::new( 0.0,  0.0,  0.0), 
+    //     glam::Vec3::new( 2.0,  5.0, -15.0), 
+    //     glam::Vec3::new(-1.5, -2.2, -2.5),  
+    //     glam::Vec3::new(-3.8, -2.0, -12.0),  
+    //     glam::Vec3::new( 2.4, -0.4, -3.5),  
+    //     glam::Vec3::new(-1.7,  3.0, -7.5),  
+    //     glam::Vec3::new( 1.3, -2.0, -2.5),  
+    //     glam::Vec3::new( 1.5,  2.0, -2.5), 
+    //     glam::Vec3::new( 1.5,  0.2, -1.5), 
+    //     glam::Vec3::new(-1.3,  1.0, -1.5)  
+    // ];
 
     // indices data
     // let indices: [i32; 6] = [
@@ -155,39 +156,39 @@ fn main() {
     //     ];
         
     // VBO
-    let mut vbo: u32 = 0;
+    // let mut vbo: u32 = 0;
     
-    // VAO
-    let mut vao: u32 = 0;
+    // // VAO
+    // let mut vao: u32 = 0;
 
-    // EBO
-    let ebo: u32 = 0;
-    unsafe {
-        gl::GenVertexArrays(1, &mut vao);
-        // 0. copy vertices array in a buffer for openGL to use
-        gl::GenBuffers(1, &mut vbo);
-        //gl::GenBuffers(1, &mut ebo);
-        // 1. bind vertex array object
-        gl::BindVertexArray(vao);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        // 2. set the vertex attributes pointers
-        gl::BufferData(gl::ARRAY_BUFFER, (vertices.len() * std::mem::size_of::<f32>()) as isize,
-        vertices.as_ptr() as *const std::ffi::c_void, gl::STATIC_DRAW);
-       // gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
-        // gl::BufferData(gl::ELEMENT_ARRAY_BUFFER, (indices.len() * std::mem::size_of::<i32>()) as isize,
-        //                                                 indices.as_ptr() as *const std::ffi::c_void, gl::STATIC_DRAW);
-        // 3. set our vertex attributes pointers
-        // position attribute
-        gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, 5 * std::mem::size_of::<f32>() as i32, std::ptr::null());
-        gl::EnableVertexAttribArray(0);
-        // color attribute
-        // gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, 5 * std::mem::size_of::<f32>() as i32, (3 * std::mem::size_of::<f32>() as i32) as *const std::ffi::c_void);
-        // gl::EnableVertexAttribArray(1);
-        // texture attribute
-        gl::VertexAttribPointer(1, 2, gl::FLOAT, gl::FALSE, 5 * std::mem::size_of::<f32>() as i32, (3 * std::mem::size_of::<f32>() as i32) as *const std::ffi::c_void);
-        gl::EnableVertexAttribArray(1);
+    // // EBO
+    // let ebo: u32 = 0;
+    // unsafe {
+    //     gl::GenVertexArrays(1, &mut vao);
+    //     // 0. copy vertices array in a buffer for openGL to use
+    //     gl::GenBuffers(1, &mut vbo);
+    //     //gl::GenBuffers(1, &mut ebo);
+    //     // 1. bind vertex array object
+    //     gl::BindVertexArray(vao);
+    //     gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
+    //     // 2. set the vertex attributes pointers
+    //     gl::BufferData(gl::ARRAY_BUFFER, (vertices.len() * std::mem::size_of::<f32>()) as isize,
+    //     vertices.as_ptr() as *const std::ffi::c_void, gl::STATIC_DRAW);
+    //    // gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
+    //     // gl::BufferData(gl::ELEMENT_ARRAY_BUFFER, (indices.len() * std::mem::size_of::<i32>()) as isize,
+    //     //                                                 indices.as_ptr() as *const std::ffi::c_void, gl::STATIC_DRAW);
+    //     // 3. set our vertex attributes pointers
+    //     // position attribute
+    //     gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, 5 * std::mem::size_of::<f32>() as i32, std::ptr::null());
+    //     gl::EnableVertexAttribArray(0);
+    //     // color attribute
+    //     // gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, 5 * std::mem::size_of::<f32>() as i32, (3 * std::mem::size_of::<f32>() as i32) as *const std::ffi::c_void);
+    //     // gl::EnableVertexAttribArray(1);
+    //     // texture attribute
+    //     gl::VertexAttribPointer(1, 2, gl::FLOAT, gl::FALSE, 5 * std::mem::size_of::<f32>() as i32, (3 * std::mem::size_of::<f32>() as i32) as *const std::ffi::c_void);
+    //     gl::EnableVertexAttribArray(1);
 
-    }
+    // }
 
     // Init shader
     let shader = shaderprogram::Shader::shader_program("./src/shaders/default.vert", "./src/shaders/default.frag");
@@ -212,7 +213,12 @@ fn main() {
     //     // Handle the scroll event here
     // });
 
+    // let mut cube1 = cube::Cube::new();
+    // cube1.setup_cube();
+    let mut cube2 = cube::Cube::new();
+    cube2.setup_cube();
     
+
     // Loop until the user closes the window
     while !window.should_close() {
 
@@ -224,6 +230,7 @@ fn main() {
         //let mut view = glam::Mat4::IDENTITY;
         //view = view * glam::Mat4::from_translation(glam::Vec3::new(0.0, 0.0, -3.0));
         let view = glam::Mat4::look_at_rh(camera.get_position(),camera.get_position() + camera.get_front(), camera.get_up());
+        
         let mut projection = glam::Mat4::IDENTITY;
         // rh stands for right hand
         projection = projection * glam::Mat4::perspective_rh(camera.get_fov().to_radians(), (WIN_WIDTH / WIN_HEIGHT) as f32, 0.1, 100.0);
@@ -279,27 +286,28 @@ fn main() {
             shader.set_mat4("projection",projection);
             //shader.use_shader();
             // bind vertex array object
-            gl::BindVertexArray(vao);
+            //gl::BindVertexArray(vao);
 
             // Render goes here
-            for x in 0..cube_positions.len() {
-                model = glam::Mat4::IDENTITY;
-                model = model * glam::Mat4::from_translation(cube_positions[x]);
-                let mut angle = 25.0 * x as f32;
-                model = model * glam::Mat4::from_rotation_x(angle.to_radians());
-                model = model * glam::Mat4::from_rotation_y(angle.to_radians());
-                model = model * glam::Mat4::from_rotation_z(angle.to_radians());
+            cube2.render();
+            // for x in 0..cube_positions.len() {
+            //     model = glam::Mat4::IDENTITY;
+            //     model = model * glam::Mat4::from_translation(cube_positions[x]);
+            //     let mut angle = 25.0 * x as f32;
+            //     model = model * glam::Mat4::from_rotation_x(angle.to_radians());
+            //     model = model * glam::Mat4::from_rotation_y(angle.to_radians());
+            //     model = model * glam::Mat4::from_rotation_z(angle.to_radians());
                 
-                if x % 3 == 0 {
-                    angle = 25.0 *  glfw::ffi::glfwGetTime() as f32 ;
-                    model = model * glam::Mat4::from_axis_angle((glam::Vec3::new(1.0, 0.3, 0.5)).normalize(), angle.to_radians());
+            //     if x % 3 == 0 {
+            //         angle = 25.0 *  glfw::ffi::glfwGetTime() as f32 ;
+            //         model = model * glam::Mat4::from_axis_angle((glam::Vec3::new(1.0, 0.3, 0.5)).normalize(), angle.to_radians());
                 
-                }
+            //     }
 
-                shader.set_mat4("model",model);
-                gl::DrawArrays(gl::TRIANGLES, 0,36);
+            //     shader.set_mat4("model",model);
+            //     gl::DrawArrays(gl::TRIANGLES, 0,36);
 
-            }
+            // }
             
 
             // for x in 0..20 {
@@ -332,11 +340,12 @@ fn main() {
     }
 
     // Cleanup and housekeeping
-    unsafe {
-        gl::DeleteVertexArrays(1, &vao);
-        gl::DeleteBuffers(1, &vbo);
-        gl::DeleteBuffers(1, &ebo);
-    }
+    cube2.destroy();
+    // unsafe {
+    //     gl::DeleteVertexArrays(1, &vao);
+    //     gl::DeleteBuffers(1, &vbo);
+    //     gl::DeleteBuffers(1, &ebo);
+    // }
     
 }
 
