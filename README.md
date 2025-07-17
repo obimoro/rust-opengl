@@ -1,6 +1,6 @@
 # openGL with RUST
 
-[MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+![MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
 Trying to rustify the opengl tutorials from https://learnopengl.com/.
 
