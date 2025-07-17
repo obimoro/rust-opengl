@@ -1,4 +1,5 @@
 # openGL with RUST
+
 ![Built with Rust][badge-2] ![MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
 Trying to rustify the opengl tutorials from https://learnopengl.com/.
