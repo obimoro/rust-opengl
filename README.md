@@ -4,7 +4,7 @@
 
 Trying to rustify the opengl tutorials from https://learnopengl.com/.
 <div align="center" markdown="1">
-<img src="resouces/pictures/opengl_with_rust.png" height=400px width=400px>
+<img src="resources/pictures/opengl_with_rust.png" height=400px width=400px>
 </div>
 ## Installation
 
