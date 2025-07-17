@@ -1,6 +1,6 @@
 # openGL with RUST
 
-![Built with Rust] ![MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+![Built with Rust][badge-1] ![MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
 Trying to rustify the opengl tutorials from https://learnopengl.com/.
 
@@ -26,3 +26,6 @@ Thanks to https://learnopengl.com/ and the rust community by providing alot of t
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
+
+
+[badge-1]: https://img.shields.io/badge/Built%20with-Rust-Purple
