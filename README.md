@@ -6,7 +6,8 @@ Trying to rustify the opengl tutorials from https://learnopengl.com/.
 <div align="center" markdown="1">
 <img src="resources/pictures/opengl_with_rust.png" height=400px width=400px>
 </div>
-## Installation
+
+# Installation
 
 Use building rust command to build and run the code
 
@@ -14,18 +15,18 @@ Use building rust command to build and run the code
 cargo build && cago run
 ```
 
-## Usage
+# Usage
 
 ```bash
 cago run
 
 ```
 
-## Contributing
+# Contributing
 
 Thanks to https://learnopengl.com/ and the rust community by providing alot of tutorials and guides
 
-## License
+# License
 
 [MIT](https://choosealicense.com/licenses/mit/)
 
