@@ -1,5 +1,3 @@
-use std::char::CharTryFromError;
-
 // -------------------------------------------------------------
 //
 // Rustify https://learnopengl.com/
@@ -89,106 +87,6 @@ fn main() {
     // Timing 
     let mut last_frame = 0.0;
     
-    // cube vertex data
-    // let vertices: [f32; 180] = [
-    // //   // position       // texture cords
-    //     -0.5, -0.5, -0.5,  0.0, 0.0,
-    //      0.5, -0.5, -0.5,  1.0, 0.0,
-    //      0.5,  0.5, -0.5,  1.0, 1.0,
-    //      0.5,  0.5, -0.5,  1.0, 1.0,
-    //     -0.5,  0.5, -0.5,  0.0, 1.0,
-    //     -0.5, -0.5, -0.5,  0.0, 0.0,
-        
-    //     -0.5, -0.5,  0.5,  0.0, 0.0,
-    //      0.5, -0.5,  0.5,  1.0, 0.0,
-    //      0.5,  0.5,  0.5,  1.0, 1.0,
-    //      0.5,  0.5,  0.5,  1.0, 1.0,
-    //     -0.5,  0.5,  0.5,  0.0, 1.0,
-    //     -0.5, -0.5,  0.5,  0.0, 0.0,
-        
-    //     -0.5,  0.5,  0.5,  1.0, 0.0,
-    //     -0.5,  0.5, -0.5,  1.0, 1.0,
-    //     -0.5, -0.5, -0.5,  0.0, 1.0,
-    //     -0.5, -0.5, -0.5,  0.0, 1.0,
-    //     -0.5, -0.5,  0.5,  0.0, 0.0,
-    //     -0.5,  0.5,  0.5,  1.0, 0.0,
-        
-    //      0.5,  0.5,  0.5,  1.0, 0.0,
-    //      0.5,  0.5, -0.5,  1.0, 1.0,
-    //      0.5, -0.5, -0.5,  0.0, 1.0,
-    //      0.5, -0.5, -0.5,  0.0, 1.0,
-    //      0.5, -0.5,  0.5,  0.0, 0.0,
-    //      0.5,  0.5,  0.5,  1.0, 0.0,
-        
-    //     -0.5, -0.5, -0.5,  0.0, 1.0,
-    //      0.5, -0.5, -0.5,  1.0, 1.0,
-    //      0.5, -0.5,  0.5,  1.0, 0.0,
-    //      0.5, -0.5,  0.5,  1.0, 0.0,
-    //     -0.5, -0.5,  0.5,  0.0, 0.0,
-    //     -0.5, -0.5, -0.5,  0.0, 1.0,
-
-    //     -0.5,  0.5, -0.5,  0.0, 1.0,
-    //      0.5,  0.5, -0.5,  1.0, 1.0,
-    //      0.5,  0.5,  0.5,  1.0, 0.0,
-    //      0.5,  0.5,  0.5,  1.0, 0.0,
-    //     -0.5,  0.5,  0.5,  0.0, 0.0,
-    //     -0.5,  0.5, -0.5,  0.0, 1.0
-    // ];
-
-    // Cubes position in the world space
-    // let cube_positions: [glam::Vec3; 10] = [    
-    //     glam::Vec3::new( 0.0,  0.0,  0.0), 
-    //     glam::Vec3::new( 2.0,  5.0, -15.0), 
-    //     glam::Vec3::new(-1.5, -2.2, -2.5),  
-    //     glam::Vec3::new(-3.8, -2.0, -12.0),  
-    //     glam::Vec3::new( 2.4, -0.4, -3.5),  
-    //     glam::Vec3::new(-1.7,  3.0, -7.5),  
-    //     glam::Vec3::new( 1.3, -2.0, -2.5),  
-    //     glam::Vec3::new( 1.5,  2.0, -2.5), 
-    //     glam::Vec3::new( 1.5,  0.2, -1.5), 
-    //     glam::Vec3::new(-1.3,  1.0, -1.5)  
-    // ];
-
-    // indices data
-    // let indices: [i32; 6] = [
-    //     0, 1, 2, // first triangle
-    //     0, 2, 3 // second triangle
-    //     ];
-        
-    // VBO
-    // let mut vbo: u32 = 0;
-    
-    // // VAO
-    // let mut vao: u32 = 0;
-
-    // // EBO
-    // let ebo: u32 = 0;
-    // unsafe {
-    //     gl::GenVertexArrays(1, &mut vao);
-    //     // 0. copy vertices array in a buffer for openGL to use
-    //     gl::GenBuffers(1, &mut vbo);
-    //     //gl::GenBuffers(1, &mut ebo);
-    //     // 1. bind vertex array object
-    //     gl::BindVertexArray(vao);
-    //     gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-    //     // 2. set the vertex attributes pointers
-    //     gl::BufferData(gl::ARRAY_BUFFER, (vertices.len() * std::mem::size_of::<f32>()) as isize,
-    //     vertices.as_ptr() as *const std::ffi::c_void, gl::STATIC_DRAW);
-    //    // gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
-    //     // gl::BufferData(gl::ELEMENT_ARRAY_BUFFER, (indices.len() * std::mem::size_of::<i32>()) as isize,
-    //     //                                                 indices.as_ptr() as *const std::ffi::c_void, gl::STATIC_DRAW);
-    //     // 3. set our vertex attributes pointers
-    //     // position attribute
-    //     gl::VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, 5 * std::mem::size_of::<f32>() as i32, std::ptr::null());
-    //     gl::EnableVertexAttribArray(0);
-    //     // color attribute
-    //     // gl::VertexAttribPointer(1, 3, gl::FLOAT, gl::FALSE, 5 * std::mem::size_of::<f32>() as i32, (3 * std::mem::size_of::<f32>() as i32) as *const std::ffi::c_void);
-    //     // gl::EnableVertexAttribArray(1);
-    //     // texture attribute
-    //     gl::VertexAttribPointer(1, 2, gl::FLOAT, gl::FALSE, 5 * std::mem::size_of::<f32>() as i32, (3 * std::mem::size_of::<f32>() as i32) as *const std::ffi::c_void);
-    //     gl::EnableVertexAttribArray(1);
-
-    // }
 
     // Init shader
     let shader = shaderprogram::Shader::shader_program("./src/shaders/default.vert", "./src/shaders/default.frag");
@@ -215,21 +113,21 @@ fn main() {
 
     // let mut cube1 = cube::Cube::new();
     // cube1.setup_cube();
-    let mut cube2 = cube::Cube::new();
-    cube2.setup_cube();
+    let mut cube1 = cube::Cube::new_position(glam::Vec3::new(-1.0,-1.0,-3.0));
+    let mut cube2 = cube::Cube::new_position(glam::Vec3::new(1.0,1.0,-3.0));
+
     
 
     // Loop until the user closes the window
     while !window.should_close() {
-
         let current_frame = unsafe { glfw::ffi::glfwGetTime() as f32 };
         let delta_time = current_frame - last_frame;
         last_frame = current_frame;
-        
+        println!("pos: {}, front: {}, u: {}", camera.get_position(),camera.get_front(), camera.get_up());
         // view
         //let mut view = glam::Mat4::IDENTITY;
         //view = view * glam::Mat4::from_translation(glam::Vec3::new(0.0, 0.0, -3.0));
-        let view = glam::Mat4::look_at_rh(camera.get_position(),camera.get_position() + camera.get_front(), camera.get_up());
+        let view = glam::Mat4::look_at_rh(camera.get_position(),(camera.get_position() + camera.get_front()), camera.get_up());
         
         let mut projection = glam::Mat4::IDENTITY;
         // rh stands for right hand
@@ -262,7 +160,7 @@ fn main() {
         });
 
         
-        let model_location = unsafe { gl::GetUniformLocation(shader.get_id(), std::ffi::CString::new("model").unwrap().as_ptr()) };
+        // let model_location = unsafe { gl::GetUniformLocation(shader.get_id(), std::ffi::CString::new("model").unwrap().as_ptr()) };
         let view_location = unsafe { gl::GetUniformLocation(shader.get_id(), "view\0".as_ptr() as *const i8) };
         // Rendering commands here
         unsafe {
@@ -278,9 +176,9 @@ fn main() {
             gl::BindTexture(gl::TEXTURE_2D, texture1.get_id());
             // gl::ActiveTexture(gl::TEXTURE1);
             // gl::BindTexture(gl::TEXTURE_2D, texture2.get_id());
-            let mut model = glam::Mat4::IDENTITY;
-            let model_data: [f32; 16] = model.to_cols_array();
-            gl::UniformMatrix4fv(model_location, 1, gl::FALSE, model_data.as_ptr() as *const f32);  
+            // let mut model = glam::Mat4::IDENTITY;
+            // let model_data: [f32; 16] = model.to_cols_array();
+            // gl::UniformMatrix4fv(model_location, 1, gl::FALSE, model_data.as_ptr() as *const f32);  
             let view_data: [f32; 16] = view.to_cols_array();
             gl::UniformMatrix4fv(view_location, 1, gl::FALSE, view_data.as_ptr() as *const f32);
             shader.set_mat4("projection",projection);
@@ -289,7 +187,8 @@ fn main() {
             //gl::BindVertexArray(vao);
 
             // Render goes here
-            cube2.render();
+            cube1.draw(&shader);
+            cube2.draw(&shader);
             // for x in 0..cube_positions.len() {
             //     model = glam::Mat4::IDENTITY;
             //     model = model * glam::Mat4::from_translation(cube_positions[x]);
@@ -340,6 +239,7 @@ fn main() {
     }
 
     // Cleanup and housekeeping
+    cube1.destroy();
     cube2.destroy();
     // unsafe {
     //     gl::DeleteVertexArrays(1, &vao);

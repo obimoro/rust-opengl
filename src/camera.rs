@@ -26,7 +26,7 @@ pub struct Camera {
 
 impl Camera {
     const MIN_FOV: f32 = 1.0;
-    const MAX_FOV: f32 = 45.0;
+    const MAX_FOV: f32 = 65.0;
 
     const MIN_PITCH: f64 = -89.0;
     const MAX_PITCH: f64 = 89.0;
@@ -34,11 +34,11 @@ impl Camera {
     pub fn new() -> Self {
         // Creates a new camera with the given initial position, front direction and up direction
         Camera {
-            position: glam::Vec3::new(0.0, 0.0,0.0),
-            front: glam::Vec3::new(0.0, 0.0,-3.0),
+            position: glam::Vec3::new(0.0, 0.0,3.0),
+            front: glam::Vec3::new(0.0, 0.0,-1.0),
             up: glam::Vec3::new(0.0, 1.0,0.0),
             // other initialize properrties goes here
-            first_mouse: true,
+            first_mouse: false,
             yaw: 90.0,
             pitch: 0.0,
             last_x: WIN_WIDTH as f64 / 2.0,
