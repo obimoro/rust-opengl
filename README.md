@@ -3,7 +3,9 @@
 ![Built with Rust][badge-1] ![MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
 Trying to rustify the opengl tutorials from https://learnopengl.com/.
-
+<div align="center" markdown="1">
+<img src="pictures/rustscan.png" height=200px width=200px>
+</div>
 ## Installation
 
 Use building rust command to build and run the code
